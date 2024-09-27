@@ -1,9 +1,19 @@
 // Lehan Li's project for Kuluo
 
 #include "TicTacToe.h"
-#include "Styling/SlateBrush.h"
 
 UTicTacToe* UTicTacToe::Instance = nullptr;
+
+void UTicTacToe::NativeConstruct()
+{
+    Super::NativeConstruct();
+    //Initialization
+    Instance = this;
+    ButtonsArray = { {BoardSlot_0, BoardSlot_1, BoardSlot_2},{BoardSlot_3, BoardSlot_4,
+        BoardSlot_5},{BoardSlot_6, BoardSlot_7, BoardSlot_8} };
+    ImagesArray = { {Image_0, Image_1, Image_2},{Image_3, Image_4,
+        Image_5},{Image_6, Image_7, Image_8} };
+}
 
 void UTicTacToe::ResetData()
 {
@@ -25,18 +35,6 @@ void UTicTacToe::ResetData()
     }
 }
 
-void UTicTacToe::NativeConstruct()
-{
-	Super::NativeConstruct();
-
-    //Initialization
-	Instance = this;
-    ButtonsArray = { {BoardSlot_0, BoardSlot_1, BoardSlot_2},{BoardSlot_3, BoardSlot_4,
-        BoardSlot_5},{BoardSlot_6, BoardSlot_7, BoardSlot_8} };
-    ImagesArray = { {Image_0, Image_1, Image_2},{Image_3, Image_4,
-        Image_5},{Image_6, Image_7, Image_8} };
-}
-
 void UTicTacToe::PlayerMove(int X, int Y)
 {
     Board[X][Y] = 1;
@@ -48,10 +46,15 @@ void UTicTacToe::PlayerMove(int X, int Y)
         if (aiMove.Key != -1 && aiMove.Value != -1)
         {
             Board[aiMove.Key][aiMove.Value] = -1;
-            ButtonsArray[aiMove.Key][aiMove.Value]->SetIsEnabled(false);
-            UpdateBoardImages();
+            ButtonsArray[aiMove.Key][aiMove.Value]->SetIsEnabled(false); 
         }
     }
+    UpdateBoardImages();
+    int Result = EvaluateBoard();
+    if (Result == -1) BP_EndEvent(-1);
+    else if (Result == 1) BP_EndEvent(1);
+    else if (Result == 2) BP_EndEvent(0);
+    
 }
 
 UTicTacToe* UTicTacToe::Get()
@@ -65,18 +68,15 @@ int UTicTacToe::Minimax(int Depth, bool IsMaximizing)
 
     if (Score == 10)
     {
-        BP_EndEvent(-1);
-        return Score - Depth; // AI wins
+        return Score - Depth;
     }
     if (Score == -10)
     {
-        BP_EndEvent(1);
-        return Score + Depth; // Player wins
+        return Score + Depth;
     }
     if (IsBoardFull())
     {
-        BP_EndEvent(0);
-        return 0; // Tie
+        return 0;
     }
 
     if (IsMaximizing)
@@ -86,11 +86,11 @@ int UTicTacToe::Minimax(int Depth, bool IsMaximizing)
         {
             for (int j = 0; j < 3; j++)
             {
-                if (Board[i][j] == 0) // 空位
+                if (Board[i][j] == 0)
                 {
-                    Board[i][j] = -1; // AI
+                    Board[i][j] = -1;
                     bestVal = FMath::Max(bestVal, Minimax(Depth + 1, !IsMaximizing));
-                    Board[i][j] = 0; // 撤销移动
+                    Board[i][j] = 0; 
                 }
             }
         }
@@ -103,11 +103,11 @@ int UTicTacToe::Minimax(int Depth, bool IsMaximizing)
         {
             for (int j = 0; j < 3; j++)
             {
-                if (Board[i][j] == 0) // 空位
+                if (Board[i][j] == 0) 
                 {
-                    Board[i][j] = 1; // 玩家
+                    Board[i][j] = 1; 
                     bestVal = FMath::Min(bestVal, Minimax(Depth + 1, !IsMaximizing));
-                    Board[i][j] = 0; // 撤销移动
+                    Board[i][j] = 0; 
                 }
             }
         }
@@ -115,9 +115,48 @@ int UTicTacToe::Minimax(int Depth, bool IsMaximizing)
     }
 }
 
+int UTicTacToe::EvaluateBoard()
+{
+    for (int row = 0; row < 3; row++)
+    {
+        if (Board[row][0] == Board[row][1] && Board[row][1] == Board[row][2])
+        {
+            if (Board[row][0] == -1) return -1; // AI wins
+            if (Board[row][0] == 1) return 1; // Player wins
+        }
+    }
+
+    for (int col = 0; col < 3; col++)
+    {
+        if (Board[0][col] == Board[1][col] && Board[1][col] == Board[2][col])
+        {
+            if (Board[0][col] == -1) return -1; // AI wins
+            if (Board[0][col] == 1) return 1; // Player wins
+        }
+    }
+
+    if (Board[0][0] == Board[1][1] && Board[1][1] == Board[2][2])
+    {
+        if (Board[0][0] == -1) return -1; // AI wins
+        if (Board[0][0] == 1) return 1; // Player wins
+    }
+
+    if (Board[0][2] == Board[1][1] && Board[1][1] == Board[2][0])
+    {
+        if (Board[0][2] == -1) return -1; // AI wins
+        if (Board[0][2] == 1) return 1; // Player wins
+    }
+
+    if (IsBoardFull())
+    {
+        return 2; //Tie
+    }
+
+    return 0;
+}
+
 int UTicTacToe::EvaluateTempBoard()
 {
-    // 评估当前棋盘
     for (int row = 0; row < 3; row++)
     {
         if (Board[row][0] == Board[row][1] && Board[row][1] == Board[row][2])
@@ -148,7 +187,7 @@ int UTicTacToe::EvaluateTempBoard()
         if (Board[0][2] == 1) return -10; // Player wins
     }
 
-    return 0; // 平局
+    return 0;
 }
 
 TPair<int, int> UTicTacToe::FindBestMove()
@@ -160,11 +199,11 @@ TPair<int, int> UTicTacToe::FindBestMove()
     {
         for (int j = 0; j < 3; j++)
         {
-            if (Board[i][j] == 0) // 空位
+            if (Board[i][j] == 0) 
             {
-                Board[i][j] = -1; // AI
+                Board[i][j] = -1;
                 int moveVal = Minimax(0, false);
-                Board[i][j] = 0; // 撤销移动
+                Board[i][j] = 0;
 
                 if (moveVal > bestVal)
                 {
@@ -183,13 +222,13 @@ bool UTicTacToe::IsBoardFull()
     {
         for (const auto& Cell : Row)
         {
-            if (Cell == 0) // 如果有空位
+            if (Cell == 0) 
             {
-                return false; // 棋盘未满
+                return false; 
             }
         }
     }
-    return true; // 棋盘已满
+    return true;
 }
 
 void UTicTacToe::UpdateBoardImages()

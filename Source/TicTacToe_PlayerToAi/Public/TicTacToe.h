@@ -8,8 +8,6 @@
 #include "Components/Button.h"
 #include "TicTacToe.generated.h"
 
-class UUniformGridPanel;
-
 USTRUCT(BlueprintType)
 struct FImageRows
 {
@@ -26,6 +24,32 @@ class TICTACTOE_PLAYERTOAI_API UTicTacToe : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	static UTicTacToe* Instance;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture2D* PlayerImage;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture2D* AiImage;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void BP_EndEvent(int ResultIndex);
+
+	void NativeConstruct() override;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetData();
+
+	void PlayerMove(int X, int Y);
+
+	static UTicTacToe* Get();
+
+	int Minimax(int Depth, bool IsMaximizing);
+	int EvaluateTempBoard();
+	int EvaluateBoard();//0 = 游戏中， 1 = 玩家获胜， -1 = ai获胜， 2 = 平局
+	TPair<int, int> FindBestMove();
+	bool IsBoardFull();
+	void UpdateBoardImages();
 
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
 	UButton* BoardSlot_0;
@@ -65,35 +89,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (BindWidget))
 	UImage* Image_8;
 
-
-	UPROPERTY(EditDefaultsOnly)
-	UTexture2D* PlayerImage;
-
-	UPROPERTY(EditDefaultsOnly)
-	UTexture2D* AiImage;
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
-	void BP_EndEvent(int ResultIndex);
-
-	UFUNCTION(BlueprintCallable)
-	void ResetData();
-
-	void NativeConstruct() override;
-
-	void PlayerMove(int X, int Y);
-
-	static UTicTacToe* Get();
-	static UTicTacToe* Instance;
-
-	int Minimax(int Depth, bool IsMaximizing);
-	int EvaluateTempBoard();
-	TPair<int, int> FindBestMove();
-	bool IsBoardFull();
-	void UpdateBoardImages();
-
 private:
 	TArray<TArray<int>> Board = { {0,0,0},{0,0,0},{0,0,0} };
 	TArray<TArray<UButton*>> ButtonsArray;
 	TArray<TArray<UImage*>> ImagesArray;
-	int PlayerIndex; // 1 = player; -1 = ai
 };
