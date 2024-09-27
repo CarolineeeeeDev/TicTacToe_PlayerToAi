@@ -4,8 +4,7 @@
 
 游戏引擎：UE5
 
-可执行文件：“Executable”文件夹内
-或链接下载https://drive.google.com/file/d/1eGZCtnXRFjEYL1h1xw85oRgNzPqL40KA/view?usp=drive_link
+可执行文件链接：https://drive.google.com/file/d/1eGZCtnXRFjEYL1h1xw85oRgNzPqL40KA/view?usp=drive_link
 
 
 
